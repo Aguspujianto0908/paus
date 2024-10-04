@@ -105,7 +105,8 @@ def update_clicks(token, clicks):
     }
 
     try:
-        print("Payload yang akan dikirim:", json.dumps(payload))
+        # Hapus atau komentari baris di bawah ini untuk menghilangkan pencetakan payload
+        # print("Payload yang akan dikirim:", json.dumps(payload))
         
         response = requests.patch(url, headers=headers, data=json.dumps(payload))
 
@@ -134,6 +135,10 @@ while True:
 
         # Perulangan untuk mencetak saldo dan informasi pengguna
         while True:
+            # Memperbarui saldo dari server
+            token, balance, first_name, is_banned = sync_user(data_check_chain)
+            new_balance = balance + random_amount
+            
             print("Current Balance:", new_balance)  # Mencetak saldo saat ini
             print("First Name:", first_name)  # Mencetak First Name
             print("Banned:", is_banned)  # Mencetak status banned tanpa "Is"
