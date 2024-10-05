@@ -3,7 +3,7 @@ import json
 import urllib.parse
 import random
 import time
-import shutil  # Import for terminal size
+import shutil  # Import untuk ukuran terminal
 from datetime import datetime, timedelta
 
 class Colors:
@@ -13,11 +13,20 @@ class Colors:
     RED = "\033[91m"        # Warna merah
     YELLOW = "\033[93m"     # Warna kuning
 
+def scale_pattern(pattern, scale):
+    scaled_pattern = []
+    for line in pattern:
+        scaled_line = ''.join([char * scale for char in line])  # Mengulang setiap karakter
+        for _ in range(scale):  # Mengulang setiap baris sesuai skala
+            scaled_pattern.append(scaled_line)
+    return scaled_pattern
+
 def print_pattern():
     terminal_size = shutil.get_terminal_size()
     width = terminal_size.columns
 
-    pattern = [
+    # Definisikan pola dasar
+    base_pattern = [
         "█████████  ██████████    ██████      ████████  ████████    ██      ██  ██     ██",
         "██      ██     ██       ██    ██   ██          ██      ██  ██      ██  ██    ██",
         "██      ██     ██      ██      ██  ██          ██      ██  ██      ██  ██   ██",
@@ -27,9 +36,14 @@ def print_pattern():
         "██             ██  ██  ██      ██  ████████    ████████      ██████    ██     ██"
     ]
 
-    # Adjust the pattern to fit the terminal width
-    for line in pattern:
-        print(Colors.DARK_BLUE + line.center(width) + Colors.RESET)
+    # Tentukan skala berdasarkan lebar terminal
+    scale = max(1, width // 80)  # Asumsi lebar pola dasar adalah 80 karakter
+    scaled_pattern = scale_pattern(base_pattern, scale)
+
+    # Cetak pola yang sudah diskalakan
+    for line in scaled_pattern:
+        adjusted_line = line.center(width)
+        print(Colors.DARK_BLUE + adjusted_line + Colors.RESET)
 
 # Menampilkan pola di awal
 print_pattern()
@@ -91,7 +105,7 @@ def claim_bonus(token):
 
     response = requests.patch(url, headers=headers)
     if response.status_code == 200:
-        print(Colors.GREEN + "Bonus claimed successfully!" + Colors.RESET)
+        print(Colors.GREEN + "Bonus berhasil diklaim!" + Colors.RESET)
         data = response.json()
         balance = data.get("balance", {}).get("amount")
         return balance
@@ -99,12 +113,12 @@ def claim_bonus(token):
         print(Colors.RED + "Error pada claim_bonus: " + str(response.status_code) + Colors.RESET)
         try:
             error_data = response.json()
-            print("Error Message:", error_data.get("message", "No error message provided"))
+            print("Pesan Error:", error_data.get("message", "Tidak ada pesan error yang disediakan"))
         except json.JSONDecodeError:
-            print("Response text:", response.text)
+            print("Teks respons:", response.text)
         
         if response.status_code == 500:
-            print("Internal Server Error, silakan coba lagi nanti.")
+            print("Kesalahan Internal Server, silakan coba lagi nanti.")
         return None
 
 def update_clicks(token, clicks):
@@ -123,12 +137,12 @@ def update_clicks(token, clicks):
         response = requests.patch(url, headers=headers, data=json.dumps(payload))
 
         if response.status_code == 200:
-            print("Clicks updated successfully!")
+            print("Klik berhasil diperbarui!")
         else:
-            print(Colors.RED + "Error updating clicks. Status code: " + str(response.status_code) + Colors.RESET)
-            print("Response:", response.text)
+            print(Colors.RED + "Error saat memperbarui klik. Status kode: " + str(response.status_code) + Colors.RESET)
+            print("Respons:", response.text)
             if response.status_code == 500:
-                print("Internal Server Error, silakan coba lagi nanti.")
+                print("Kesalahan Internal Server, silakan coba lagi nanti.")
 
     except Exception as e:
         print(Colors.RED + "Error: " + str(e) + Colors.RESET)
@@ -142,21 +156,21 @@ while True:
     if token:
         random_amount = random.randint(300, 800)
         new_balance = balance + random_amount
-        print(f"\n{Colors.YELLOW}New Balance after adding random amount: {new_balance}{Colors.RESET}")
-        print(f"{Colors.YELLOW}Amount added to balance: {random_amount}{Colors.RESET}")
+        print(f"\n{Colors.YELLOW}Saldo Baru setelah menambahkan jumlah acak: {new_balance}{Colors.RESET}")
+        print(f"{Colors.YELLOW}Jumlah yang ditambahkan ke saldo: {random_amount}{Colors.RESET}")
 
         while True:
             token, balance, first_name, is_banned = sync_user(data_check_chain)
             new_balance = balance + random_amount
             
-            print("\n" + Colors.GREEN + "Current Balance: " + str(new_balance) + Colors.RESET)
-            print(Colors.GREEN + "First Name: " + first_name + Colors.RESET)
-            print(Colors.GREEN + "Banned: " + is_banned + Colors.RESET)
+            print("\n" + Colors.GREEN + "Saldo Saat Ini: " + str(new_balance) + Colors.RESET)
+            print(Colors.GREEN + "Nama Depan: " + first_name + Colors.RESET)
+            print(Colors.GREEN + "Dilarang: " + is_banned + Colors.RESET)
             
             update_clicks(token, new_balance)
 
             for remaining in range(random_amount, 0, -1):
-                print(f"Waiting for {remaining} seconds...", end='\r')
+                print(f"Menunggu {remaining} detik...", end='\r')
                 time.sleep(1)
                 
             print()  # Tambahkan baris baru setelah hitungan mundur
@@ -169,6 +183,6 @@ while True:
                 else:
                     break
             else:
-                print(Colors.YELLOW + "Bonus can only be claimed once every 6 hours." + Colors.RESET)
+                print(Colors.YELLOW + "Bonus hanya dapat diklaim sekali setiap 6 jam." + Colors.RESET)
 
     time.sleep(5)
