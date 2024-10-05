@@ -8,6 +8,9 @@ from datetime import datetime, timedelta
 class Colors:
     RESET = "\033[0m"
     DARK_BLUE = "\033[94m"  # Warna biru tua
+    GREEN = "\033[92m"      # Warna hijau
+    RED = "\033[91m"        # Warna merah
+    YELLOW = "\033[93m"     # Warna kuning
 
 def print_pattern():
     pattern = [
@@ -60,17 +63,14 @@ def sync_user(data_check_chain):
         data = response.json()
         token = data.get("token")
         balance = data.get("balance", {}).get("amount")
-        
-        # Mengambil firstName dan isBanned jika ada
-        first_name = data.get("user", {}).get("firstName", "N/A")
-        is_banned = data.get("user", {}).get("isBanned")  # Ambil nilai isBanned tanpa default
 
-        # Mengubah nilai is_banned menjadi "Yes" atau "No"
+        first_name = data.get("user", {}).get("firstName", "N/A")
+        is_banned = data.get("user", {}).get("isBanned")
         is_banned = "Yes" if is_banned else "No" if is_banned is not None else "N/A"
 
         return token, balance, first_name, is_banned
     else:
-        print("Error pada sync_user:", response.status_code)
+        print(Colors.RED + "Error pada sync_user: " + str(response.status_code) + Colors.RESET)
         print("Response Text:", response.text)
         return None, None, None, None
 
@@ -79,12 +79,6 @@ def claim_bonus(token):
     headers = {
         "Origin": "https://clicker.crashgame247.io",
         "Referer": "https://clicker.crashgame247.io/",
-        "Sec-Ch-Ua": '"Not A Brand",v="8", "Chromium",v="120", "Mises";v="120"',
-        "Sec-Ch-Ua-Mobile": "?1",
-        "Sec-Ch-Ua-Platform": '"Android"',
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
         "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
         "Accept": "application/json, text/plain,*/*",
         "Authorization": f"Bearer {token}"
@@ -92,13 +86,12 @@ def claim_bonus(token):
 
     response = requests.patch(url, headers=headers)
     if response.status_code == 200:
-        print("Bonus claimed successfully!")
+        print(Colors.GREEN + "Bonus claimed successfully!" + Colors.RESET)
         data = response.json()
         balance = data.get("balance", {}).get("amount")
         return balance
     else:
-        # Mencetak pesan kesalahan yang lebih mendetail
-        print("Error pada claim_bonus:", response.status_code)
+        print(Colors.RED + "Error pada claim_bonus: " + str(response.status_code) + Colors.RESET)
         try:
             error_data = response.json()
             print("Error Message:", error_data.get("message", "No error message provided"))
@@ -112,12 +105,8 @@ def claim_bonus(token):
 def update_clicks(token, clicks):
     url = "https://clicker-api.crashgame247.io/meta/clicker"
     headers = {
-        "Authority": "clicker-api.crashgame247.io",
         "Accept": "application/json, text/plain, */*",
         "Content-Type": "application/json",
-        "Origin": "https://clicker.crashgame247.io",
-        "Referer": "https://clicker.crashgame247.io/",
-        "User-Agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
         "Authorization": f"Bearer {token}"
     }
 
@@ -126,21 +115,18 @@ def update_clicks(token, clicks):
     }
 
     try:
-        # Hapus atau komentari baris di bawah ini untuk menghilangkan pencetakan payload
-        # print("Payload yang akan dikirim:", json.dumps(payload))
-        
         response = requests.patch(url, headers=headers, data=json.dumps(payload))
 
         if response.status_code == 200:
             print("Clicks updated successfully!")
         else:
-            print("Error updating clicks. Status code:", response.status_code)
+            print(Colors.RED + "Error updating clicks. Status code: " + str(response.status_code) + Colors.RESET)
             print("Response:", response.text)
             if response.status_code == 500:
                 print("Internal Server Error, silakan coba lagi nanti.")
 
     except Exception as e:
-        print("Error:", e)
+        print(Colors.RED + "Error: " + str(e) + Colors.RESET)
 
 # Menjalankan fungsi dalam perulangan
 last_claim_time = None  # Waktu klaim bonus terakhir
@@ -149,39 +135,35 @@ while True:
     token, balance, first_name, is_banned = sync_user(data_check_chain)
     
     if token:
-        random_amount = random.randint(300, 800)  # Dapatkan angka acak antara 300 dan 800
-        new_balance = balance + random_amount  # Tambah random_amount ke balance
-        print(f"New Balance after adding random amount: {new_balance}")
-        print(f"Amount added to balance: {random_amount}")  # Menampilkan jumlah yang ditambahkan
+        random_amount = random.randint(300, 800)
+        new_balance = balance + random_amount
+        print(f"\n{Colors.YELLOW}New Balance after adding random amount: {new_balance}{Colors.RESET}")
+        print(f"{Colors.YELLOW}Amount added to balance: {random_amount}{Colors.RESET}")
 
-        # Perulangan untuk mencetak saldo dan informasi pengguna
         while True:
-            # Memperbarui saldo dari server
             token, balance, first_name, is_banned = sync_user(data_check_chain)
             new_balance = balance + random_amount
             
-            print("Current Balance:", new_balance)  # Mencetak saldo saat ini
-            print("First Name:", first_name)  # Mencetak First Name
-            print("Banned:", is_banned)  # Mencetak status banned tanpa "Is"
+            print("\n" + Colors.GREEN + "Current Balance: " + str(new_balance) + Colors.RESET)
+            print(Colors.GREEN + "First Name: " + first_name + Colors.RESET)
+            print(Colors.GREEN + "Banned: " + is_banned + Colors.RESET)
             
-            update_clicks(token, new_balance)  # Memanggil fungsi update_clicks
-            
-            # Hitung mundur
+            update_clicks(token, new_balance)
+
             for remaining in range(random_amount, 0, -1):
                 print(f"Waiting for {remaining} seconds...", end='\r')
-                time.sleep(1)  # Tidur selama 1 detik
+                time.sleep(1)
                 
             print()  # Tambahkan baris baru setelah hitungan mundur
             
-            # Klaim bonus jika sudah 6 jam
             if last_claim_time is None or datetime.now() >= last_claim_time + timedelta(hours=6):
                 balance = claim_bonus(token)
                 if balance is not None:
-                    new_balance = balance + random_amount  # Perbarui balance baru setelah klaim bonus
-                    last_claim_time = datetime.now()  # Update waktu klaim terakhir
+                    new_balance = balance + random_amount
+                    last_claim_time = datetime.now()
                 else:
-                    break  # Keluar dari loop jika klaim bonus gagal
+                    break
             else:
-                print("Bonus can only be claimed once every 6 hours.")
+                print(Colors.YELLOW + "Bonus can only be claimed once every 6 hours." + Colors.RESET)
 
-    time.sleep(5)  # Tunggu 5 detik sebelum memulai siklus berikutnya
+    time.sleep(5)
