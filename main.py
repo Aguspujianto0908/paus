@@ -5,6 +5,27 @@ import random
 import time
 from datetime import datetime, timedelta
 
+class Colors:
+    RESET = "\033[0m"
+    DARK_BLUE = "\033[94m"  # Warna biru tua
+
+def print_pattern():
+    pattern = [
+        "█████████  ██████████    ██████      ████████  ████████    ██      ██  ██     ██",
+        "██      ██     ██       ██    ██   ██          ██      ██  ██      ██  ██    ██",
+        "██      ██     ██      ██      ██  ██          ██      ██  ██      ██  ██   ██",
+        "█████████      ██      ██      ██  ██████████  ██      ██  ██      ██  ██████",
+        "██             ██      ██████████          ██  ██      ██  ██      ██  ██   ██",
+        "██             ██      ██      ██          ██  ██      ██  ██      ██  ██    ██",
+        "██             ██  ██  ██      ██  ████████    ████████      ██████    ██     ██"
+    ]
+
+    for line in pattern:
+        print(Colors.DARK_BLUE + line + Colors.RESET)  # Menampilkan pola dengan warna biru tua
+
+# Menampilkan pola di awal
+print_pattern()
+
 def read_data_check_chain():
     with open('data.txt', 'r') as file:
         return file.read().strip()
