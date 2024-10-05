@@ -3,6 +3,7 @@ import json
 import urllib.parse
 import random
 import time
+import shutil  # Import for terminal size
 from datetime import datetime, timedelta
 
 class Colors:
@@ -13,6 +14,9 @@ class Colors:
     YELLOW = "\033[93m"     # Warna kuning
 
 def print_pattern():
+    terminal_size = shutil.get_terminal_size()
+    width = terminal_size.columns
+
     pattern = [
         "█████████  ██████████    ██████      ████████  ████████    ██      ██  ██     ██",
         "██      ██     ██       ██    ██   ██          ██      ██  ██      ██  ██    ██",
@@ -23,8 +27,9 @@ def print_pattern():
         "██             ██  ██  ██      ██  ████████    ████████      ██████    ██     ██"
     ]
 
+    # Adjust the pattern to fit the terminal width
     for line in pattern:
-        print(Colors.DARK_BLUE + line + Colors.RESET)  # Menampilkan pola dengan warna biru tua
+        print(Colors.DARK_BLUE + line.center(width) + Colors.RESET)
 
 # Menampilkan pola di awal
 print_pattern()
